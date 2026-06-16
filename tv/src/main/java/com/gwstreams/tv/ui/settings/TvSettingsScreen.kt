@@ -45,65 +45,153 @@ fun TvSettingsScreen(vm: TvViewModel, onLogout: () -> Unit) {
         // ---- Guide / EPG ----
         item { SectionHeader("Programme guide (EPG)") }
         item {
-            ToggleRow("Auto-fetch EPG when opening Live", s.autoFetchEpg) { vm.setAutoFetchEpg(!s.autoFetchEpg) }
+            ToggleRow(
+                label = "Auto-fetch EPG when opening Live",
+                checked = s.autoFetchEpg,
+                onToggle = { vm.setAutoFetchEpg(!s.autoFetchEpg) }
+            )
         }
         item {
-            StepperRow("EPG refresh interval", "${s.epgRefreshMinutes} min",
-                { vm.setEpgRefreshMinutes((s.epgRefreshMinutes - 5).coerceAtLeast(5)) },
-                { vm.setEpgRefreshMinutes((s.epgRefreshMinutes + 5).coerceAtMost(120)) })
+            StepperRow(
+                label = "EPG refresh interval",
+                value = "${s.epgRefreshMinutes} min",
+                onLess = { vm.setEpgRefreshMinutes((s.epgRefreshMinutes - 5).coerceAtLeast(5)) },
+                onMore = { vm.setEpgRefreshMinutes((s.epgRefreshMinutes + 5).coerceAtMost(120)) }
+            )
         }
         item {
-            ToggleRow("Use 24-hour time", s.use24hTime) { vm.setUse24h(!s.use24hTime) }
+            ToggleRow(
+                label = "Use 24-hour time",
+                checked = s.use24hTime,
+                onToggle = { vm.setUse24h(!s.use24hTime) }
+            )
         }
         item {
-            StepperRow("EPG timezone offset", "${if (s.epgTimezoneOffsetMin >= 0) "+" else ""}${s.epgTimezoneOffsetMin / 60}h ${kotlin.math.abs(s.epgTimezoneOffsetMin % 60)}m",
-                { vm.setTzOffset(s.epgTimezoneOffsetMin - 30) },
-                { vm.setTzOffset(s.epgTimezoneOffsetMin + 30) })
+            StepperRow(
+                label = "EPG timezone offset",
+                value = "${if (s.epgTimezoneOffsetMin >= 0) "+" else ""}${s.epgTimezoneOffsetMin / 60}h ${kotlin.math.abs(s.epgTimezoneOffsetMin % 60)}m",
+                onLess = { vm.setTzOffset(s.epgTimezoneOffsetMin - 30) },
+                onMore = { vm.setTzOffset(s.epgTimezoneOffsetMin + 30) }
+            )
         }
 
         // ---- Playback ----
-        item { Spacer(Modifier.height(8.dp)); SectionHeader("Playback") }
-        item {
-            ChooserRow("Buffer", listOf("Low", "Balanced", "High"),
-                when (s.bufferPreset) { BufferPreset.LOW -> 0; BufferPreset.BALANCED -> 1; BufferPreset.HIGH -> 2 }
-            ) { idx -> vm.setBufferPreset(when (idx) { 0 -> BufferPreset.LOW; 2 -> BufferPreset.HIGH; else -> BufferPreset.BALANCED }) }
+        item { 
+            Spacer(Modifier.height(8.dp))
+            SectionHeader("Playback") 
         }
         item {
-            ChooserRow("Live stream format", listOf("TS", "HLS"),
-                if (s.streamFormat == StreamFormat.HLS) 1 else 0
-            ) { idx -> vm.setStreamFormat(if (idx == 1) StreamFormat.HLS else StreamFormat.TS) }
+            ChooserRow(
+                label = "Buffer",
+                options = listOf("Low", "Balanced", "High"),
+                selectedIndex = when (s.bufferPreset) {
+                    BufferPreset.LOW -> 0
+                    BufferPreset.BALANCED -> 1
+                    BufferPreset.HIGH -> 2
+                },
+                onSelect = { idx ->
+                    vm.setBufferPreset(
+                        when (idx) {
+                            0 -> BufferPreset.LOW
+                            2 -> BufferPreset.HIGH
+                            else -> BufferPreset.BALANCED
+                        }
+                    )
+                }
+            )
         }
         item {
-            ChooserRow("Video fit", listOf("Fit", "Zoom", "Stretch"),
-                when (s.videoFit) { VideoFit.FIT -> 0; VideoFit.ZOOM -> 1; VideoFit.STRETCH -> 2 }
-            ) { idx -> vm.setVideoFit(when (idx) { 1 -> VideoFit.ZOOM; 2 -> VideoFit.STRETCH; else -> VideoFit.FIT }) }
+            ChooserRow(
+                label = "Live stream format",
+                options = listOf("TS", "HLS"),
+                selectedIndex = if (s.streamFormat == StreamFormat.HLS) 1 else 0,
+                onSelect = { idx ->
+                    vm.setStreamFormat(if (idx == 1) StreamFormat.HLS else StreamFormat.TS)
+                }
+            )
         }
         item {
-            ChooserRow("Decoder", listOf("Hardware", "Software"),
-                if (s.decoderMode == DecoderMode.SOFTWARE) 1 else 0
-            ) { idx -> vm.setDecoderMode(if (idx == 1) DecoderMode.SOFTWARE else DecoderMode.HARDWARE) }
+            ChooserRow(
+                label = "Video fit",
+                options = listOf("Fit", "Zoom", "Stretch"),
+                selectedIndex = when (s.videoFit) {
+                    VideoFit.FIT -> 0
+                    VideoFit.ZOOM -> 1
+                    VideoFit.STRETCH -> 2
+                },
+                onSelect = { idx ->
+                    vm.setVideoFit(
+                        when (idx) {
+                            1 -> VideoFit.ZOOM
+                            2 -> VideoFit.STRETCH
+                            else -> VideoFit.FIT
+                        }
+                    )
+                }
+            )
+        }
+        item {
+            ChooserRow(
+                label = "Decoder",
+                options = listOf("Hardware", "Software"),
+                selectedIndex = if (s.decoderMode == DecoderMode.SOFTWARE) 1 else 0,
+                onSelect = { idx ->
+                    vm.setDecoderMode(if (idx == 1) DecoderMode.SOFTWARE else DecoderMode.HARDWARE)
+                }
+            )
         }
 
         // ---- Layout / navigation ----
-        item { Spacer(Modifier.height(8.dp)); SectionHeader("Layout & navigation") }
-        item {
-            ChooserRow("Open app on", listOf("Live", "Movies", "Series", "Last used"),
-                when (s.defaultSection) { "MOVIES" -> 1; "SERIES" -> 2; "LAST" -> 3; else -> 0 }
-            ) { idx -> vm.setDefaultSection(when (idx) { 1 -> "MOVIES"; 2 -> "SERIES"; 3 -> "LAST"; else -> "LIVE" }) }
+        item { 
+            Spacer(Modifier.height(8.dp))
+            SectionHeader("Layout & navigation") 
         }
         item {
-            ChooserRow("Guide density", listOf("Spacious", "Normal", "Dense"),
-                (s.guideRowsDensity - 1).coerceIn(0, 2)
-            ) { idx -> vm.setGuideDensity(idx + 1) }
+            ChooserRow(
+                label = "Open app on",
+                options = listOf("Live", "Movies", "Series", "Last used"),
+                selectedIndex = when (s.defaultSection) {
+                    "MOVIES" -> 1
+                    "SERIES" -> 2
+                    "LAST" -> 3
+                    else -> 0
+                },
+                onSelect = { idx ->
+                    vm.setDefaultSection(
+                        when (idx) {
+                            1 -> "MOVIES"
+                            2 -> "SERIES"
+                            3 -> "LAST"
+                            else -> "LIVE"
+                        }
+                    )
+                }
+            )
         }
         item {
-            ChooserRow("Category sort", listOf("Default", "A–Z"),
-                if (s.categorySort == CategorySort.ALPHABETICAL) 1 else 0
-            ) { idx -> vm.setCategorySort(if (idx == 1) CategorySort.ALPHABETICAL else CategorySort.DEFAULT) }
+            ChooserRow(
+                label = "Guide density",
+                options = listOf("Spacious", "Normal", "Dense"),
+                selectedIndex = (s.guideRowsDensity - 1).coerceIn(0, 2),
+                onSelect = { idx -> vm.setGuideDensity(idx + 1) }
+            )
+        }
+        item {
+            ChooserRow(
+                label = "Category sort",
+                options = listOf("Default", "A–Z"),
+                selectedIndex = if (s.categorySort == CategorySort.ALPHABETICAL) 1 else 0,
+                onSelect = { idx ->
+                    vm.setCategorySort(if (idx == 1) CategorySort.ALPHABETICAL else CategorySort.DEFAULT)
+                }
+            )
         }
 
         // ---- Categories: hide / lock ----
-        item { Spacer(Modifier.height(8.dp)); SectionHeader("Live categories — show / hide / lock") }
+        item { 
+            Spacer(Modifier.height(8.dp))
+            SectionHeader("Live categories — show / hide / lock") 
+        }
         val liveCats = vm.allCategoriesForSection(TvSection.LIVE)
         items(liveCats, key = { it.categoryId }) { cat ->
             CategoryManageRow(
@@ -116,12 +204,15 @@ fun TvSettingsScreen(vm: TvViewModel, onLogout: () -> Unit) {
         }
 
         // ---- Maintenance ----
-        item { Spacer(Modifier.height(8.dp)); SectionHeader("Maintenance") }
-        item { FocusButton("Clear cache & refresh") { vm.clearCacheAndRefresh() } }
-        item { FocusButton("Reset all settings to default") { vm.resetAllSettings() } }
+        item { 
+            Spacer(Modifier.height(8.dp))
+            SectionHeader("Maintenance") 
+        }
+        item { FocusButton("Clear cache & refresh", onClick = { vm.clearCacheAndRefresh() }) }
+        item { FocusButton("Reset all settings to default", onClick = { vm.resetAllSettings() }) }
         item {
             Spacer(Modifier.height(16.dp))
-            FocusButton("Log out", onLogout)
+            FocusButton("Log out", onClick = onLogout)
         }
     }
 }
@@ -175,7 +266,6 @@ private fun ChooserRow(label: String, options: List<String>, selectedIndex: Int,
         Spacer(Modifier.height(6.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             options.forEachIndexed { i, opt ->
-                // Fixed: Explicitly named 'onClick' parameter to prevent trailing lambda type confusion
                 ChoiceChip(label = opt, active = (i == selectedIndex), onClick = { onSelect(i) })
             }
         }
