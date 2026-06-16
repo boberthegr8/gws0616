@@ -175,7 +175,8 @@ private fun ChooserRow(label: String, options: List<String>, selectedIndex: Int,
         Spacer(Modifier.height(6.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             options.forEachIndexed { i, opt ->
-                ChoiceChip(opt, i == selectedIndex) { onSelect(i) }
+                // Fixed: Explicitly named 'onClick' parameter to prevent trailing lambda type confusion
+                ChoiceChip(label = opt, active = (i == selectedIndex), onClick = { onSelect(i) })
             }
         }
     }
